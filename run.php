@@ -1,5 +1,6 @@
 <?php
 error_reporting(0);
+// Memuat Data Yang Dibutuhkan
 session_start();
 require_once('twitteroauth/twitteroauth.php');
 
@@ -24,8 +25,16 @@ function get($url)
 	$mt_rand = mt_rand(100, 2166);
     $ambil_quotes = get("https://otakotaku.com/quote/view/$mt_rand");
     preg_match_all('~(<i class="fa fa-fw fa-quote-left bquote"></i><p>(.*?)</p>)~', $ambil_quotes, $kata);
-    $tweet = $kata[2][0];
-    
+
+// get chara
+    preg_match('/<div class="tebal">(.*?)<\/div>/s', $ambil_quotes, $nama);
+    foreach ($nama as $data) {
+        $pecah = explode(">", $data);
+        $chara[] = str_replace('</a', " ", $pecah[2]);
+    }
+// ngetweet
+    $tweet = $kata[2][0] ."\n". implode(" ",$chara);
+
 // Posting Tweet
 $connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, access_token, access_token_secret);
 $eksekusi = $connection->post('statuses/update', array('status' => $tweet));
@@ -34,6 +43,6 @@ echo "Tweet Gagal Dikirim\n";
 }
 else {
 echo "Tweet Berhasil Dikirim!\n";
-echo $kata[2][0];
+echo $kata[2][0] . "\n" . implode(" ",$chara);
 }
 ?>
